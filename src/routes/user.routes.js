@@ -60,7 +60,7 @@ router.post("/login", async (req, res, next) => {
   }
 });
 
-router.get("/profile/:id", isAuthenticated, attachCurrentUser, async (req, res, next) => {
+router.get("/profile", isAuthenticated, attachCurrentUser, async (req, res, next) => {
   try {
     console.log(req.user);
 
