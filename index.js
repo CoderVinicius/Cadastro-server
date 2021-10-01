@@ -15,7 +15,7 @@ app.use(express.json());
 async function init() {
   try {
     const db = await connectToDb();
-
+    
     console.log("Conectado ao banco de dados!");
 
     app.use(cors({

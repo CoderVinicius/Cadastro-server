@@ -57,9 +57,6 @@ class UserService {
       pis: this.pis,
       document: this.document,
       address: this.address,
-      birthDate: this.birthDate,
-      phoneNumber: this.phoneNumber,
-      role: this.role,
     }).then((insertResult) => insertResult);
   }
 
