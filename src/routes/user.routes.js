@@ -5,7 +5,7 @@ const userModel = require("../models/User.model")
 
 const isAuthenticated = require("../middlewares/isAuthenticated");
 
-const attachCurrentUser = require("../middlewares/attachCurrentUser.js")
+const attachCurrentUser = require("../middlewares/attachCurrentUser.js");
 
 
 router.post("/signup", async (req, res, next) => {
@@ -48,12 +48,13 @@ router.post("/login", async (req, res, next) => {
   try {
     const userService = new UserService(req.body);
 
+    if (!userService.password)
+      return res.status(401).json({ error: "Acesso negado." });
+
     const loginResult = await userService.login();
+
     if (loginResult) {
       return res.status(200).json(loginResult);
-    } else {
-      // O status 401 significa Unauthorized
-      return res.status(401).json({ error: "Acesso negado." });
     }
   } catch (err) {
     next(err);
@@ -71,18 +72,35 @@ router.get("/profile", isAuthenticated, attachCurrentUser, async (req, res, next
 });
 
 
-router.put("/editUser/:id", isAuthenticated, async (req, res, next) => {
-  try{
+router.put("/editUser/:id", isAuthenticated, attachCurrentUser, async (req, res, next) => {
+    try {
+      const { id } = req.params;
 
-    const formData = req.body
-    const {id} = req.params
+      const updatedUser = await userModel.findOneAndUpdate(
+        { _id: id },
+        { $set: { ...req.body } },
+        { new: true }
+      );
 
-    const response = await userModel.findByIdAndUpdate( {_id: id}, { ...formData }, {new: true} )
-
-return res.status(200).json(response)
-  } catch(err) {
-    next(err)
+      return res.status(200).json(updatedUser);
+    } catch (err) {
+      return res.status(400).json(err);
+    }
   }
-})
+);
+
+router.delete("/deleteUser/:id", isAuthenticated, attachCurrentUser, async (req, res, next) => {
+    try {
+      const { id } = req.params;
+
+      await userModel.findOneAndDelete({ _id: id });
+
+      return res.status(200).json('Usuário deletado!');
+    } catch (err) {
+      return res.status(400).json(err);
+    }
+  }
+);
+
 
 module.exports = router;

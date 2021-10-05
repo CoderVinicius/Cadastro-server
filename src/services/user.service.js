@@ -24,22 +24,20 @@ class UserService {
 
   async getUserByEmail(email) {
     const user = await UserModel.findOne({ email: email });
+
     return user;
   }
 
   async userExists(email) {
-
     const user = await this.getUserByEmail(email);
 
     if (user) {
       return true;
     }
-
     return false;
   }
 
   hashPassword(plainTextPassword) {
-
     const saltRounds = 10;
 
     const salt = bcrypt.genSaltSync(saltRounds);
