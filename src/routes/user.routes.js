@@ -1,78 +1,102 @@
 const router = require("express").Router();
+const bcrypt = require("bcryptjs");
 
-const UserService = require("../services/user.service");
-const userModel = require("../models/User.model")
-
+const userModel = require("../models/User.model");
+const generateToken = require("../database/jwt");
 const isAuthenticated = require("../middlewares/isAuthenticated");
 
 const attachCurrentUser = require("../middlewares/attachCurrentUser.js");
 
+const salt_rounds = 10;
+router.post("/signup", async (req, res) => {
+  console.log(req.body);
 
-router.post("/signup", async (req, res, next) => {
   try {
- 
+    const { password } = req.body;
 
-    const userService = new UserService(req.body);
-
-    const emailRegex = /[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+/g;
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/gm ;
-
-    if (!userService.isValid(userService.email, emailRegex)) {
+    if (
+      !password ||
+      !password.match(
+        /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$ %^&*-]).{8,}$/
+      )
+    ) {
       return res.status(400).json({
-        error: "O campo email é obrigatório e deve ser um email válido",
+        msg: "Password is required and must have at least 8 characters, uppercase and lowercase letters, numbers and special characters.",
       });
     }
 
-    if (!userService.isValid(userService.password, passwordRegex)) {
-      return res.status(400).json({
-        error:
-          "O campo senha é obrigatório e precisa ter no mínimo 8 caracteres incluindo: letras maiúsculas e minúsculas, números, caracteres especiais.",
-      });
-    }
+    const salt = await bcrypt.genSalt(salt_rounds);
 
-    if (await userService.userExists(userService.email)) {
-      return res.status(400).json({
-        error: "Este e-mail já está cadastrado!",
-      });
-    }
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-    const insertResult = await userService.createUser();
+    const result = await userModel.create({
+      ...req.body,
+      passwordHash: hashedPassword,
+    });
 
-    return res.status(201).json(insertResult);
+    return res.status(201).json(result);
   } catch (err) {
-    next(err);
+    console.error(err);
+    return res.status(500).json({ msg: JSON.stringify(err) });
   }
 });
 
-router.post("/login", async (req, res, next) => {
+router.post("/login", async (req, res) => {
   try {
-    const userService = new UserService(req.body);
+    const { email, document, pis, password } = req.body;
 
-    if (!userService.password)
-      return res.status(401).json({ error: "Acesso negado." });
+    const user = await userModel.findOne({
+      $or: [{ email }, { document }, { pis }],
+    });
 
-    const loginResult = await userService.login();
+    console.log(user, "resposta");
 
-    if (loginResult) {
-      return res.status(200).json(loginResult);
+    if (!user) {
+      return res.status(400).json({ msg: "O usuario nao foi encontrado;" });
+    }
+
+    if (await bcrypt.compare(password, user.passwordHash)) {
+      const token = generateToken(user);
+
+      return res.status(200).json({
+        user: {
+          name: user.name,
+          email: user.email,
+          _id: user._id,
+          document: user.document,
+          pis: user.pis,
+        },
+        token,
+      });
+    } else {
+      return res.status(401).json({ msg: "Wrong password or email" });
     }
   } catch (err) {
-    next(err);
+    console.error(err);
+    return res.status(500).json({ msg: JSON.stringify(err) });
   }
 });
 
-router.get("/profile", isAuthenticated, attachCurrentUser, async (req, res, next) => {
-  try {
-    console.log(req.user);
+router.get(
+  "/profile",
+  isAuthenticated,
+  attachCurrentUser,
+  async (req, res, next) => {
+    try {
+      console.log(req.user);
 
-    return res.status(200).json(req.currentUser);
-  } catch (err) {
-    next(err);
+      return res.status(200).json(req.currentUser);
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
-
-router.put("/editUser/:id", isAuthenticated, attachCurrentUser, async (req, res, next) => {
+router.put(
+  "/editUser/:id",
+  isAuthenticated,
+  attachCurrentUser,
+  async (req, res, next) => {
     try {
       const { id } = req.params;
 
@@ -89,18 +113,21 @@ router.put("/editUser/:id", isAuthenticated, attachCurrentUser, async (req, res,
   }
 );
 
-router.delete("/deleteUser/:id", isAuthenticated, attachCurrentUser, async (req, res, next) => {
+router.delete(
+  "/deleteUser/:id",
+  isAuthenticated,
+  attachCurrentUser,
+  async (req, res, next) => {
     try {
       const { id } = req.params;
 
       await userModel.findOneAndDelete({ _id: id });
 
-      return res.status(200).json('Usuário deletado!');
+      return res.status(200).json("Usuário deletado!");
     } catch (err) {
       return res.status(400).json(err);
     }
   }
 );
-
 
 module.exports = router;
