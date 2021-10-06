@@ -22,8 +22,8 @@ async function init() {
     );
     app.use("/", userRouter);
 
-    aapp.listen(Number(process.env.PORT), () =>
-      console.log(`Server up and running at port ${process.env.PORT}`)
+    app.listen(Number(process.env.PORT), () =>
+      console.log(`Conectado ao banco na porta ${process.env.PORT}`)
     );
   } catch (err) {
     console.log("Erro ao conectar ao banco de dados!", err);
