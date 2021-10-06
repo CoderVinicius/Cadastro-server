@@ -1,29 +1,17 @@
 require("dotenv").config();
 const express = require("express");
-
-const connectToDb = require("./src/database/db.config");
-const userRouter = require("./src/routes/user.routes");
 const cors = require("cors");
+require("./src/database/db.config")();
 
 const app = express();
 
 app.use(express.json());
 
-const db = await connectToDb();
-console.log("Conectado ao banco de dados!");
+app.use(cors({ origin: process.env.REACT_APP_URL }));
 
-app.use(
-  cors({
-    origin: "*",
-    methods: ["GET", "POST", "DELETE", "UPDATE", "PUT", "PATCH"],
-  })
-);
+const userRouter = require("./src/routes/user.routes");
 app.use("/", userRouter);
 
-app.listen(process.env.PORT || 4000, function () {
-  console.log(
-    "Express server listening on port %d in %s mode",
-    this.address().port,
-    app.settings.env
-  );
-});
+app.listen(Number(process.env.PORT), () =>
+  console.log(`Server up and running at port ${process.env.PORT}`)
+);
