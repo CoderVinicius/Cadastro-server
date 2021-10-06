@@ -22,7 +22,9 @@ async function init() {
     );
     app.use("/", userRouter);
 
-    app.listen(4000, () => console.log("Servidor rodando na porta 4000!"));
+    aapp.listen(Number(process.env.PORT), () =>
+      console.log(`Server up and running at port ${process.env.PORT}`)
+    );
   } catch (err) {
     console.log("Erro ao conectar ao banco de dados!", err);
     process.exit(1);
