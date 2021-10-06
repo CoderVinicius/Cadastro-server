@@ -7,7 +7,12 @@ const app = express();
 
 app.use(express.json());
 
-app.use(cors({ origin: process.env.REACT_APP_URL }));
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "DELETE", "UPDATE", "PUT", "PATCH"],
+  })
+);
 
 const userRouter = require("./src/routes/user.routes");
 app.use("/", userRouter);
