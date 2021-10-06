@@ -22,7 +22,13 @@ async function init() {
     );
     app.use("/", userRouter);
 
-    app.listen(4000, () => console.log("Servidor rodando na porta 4000!"));
+    app.listen(process.env.PORT || 4000, function () {
+      console.log(
+        "Express server listening on port %d in %s mode",
+        this.address().port,
+        app.settings.env
+      );
+    });
   } catch (err) {
     console.log("Erro ao conectar ao banco de dados!", err);
     process.exit(1);
