@@ -15,7 +15,7 @@ app.use(
 );
 
 const userRouter = require("./src/routes/user.routes");
-app.use("/api", userRouter);
+app.use("/", userRouter);
 
 app.listen(process.env.PORT || 4000, function () {
   console.log("listening on *:4000");
