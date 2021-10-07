@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
+    "start": "pm2 node index.js",
     "dev": "nodemon ."
   },
   "keywords": [],
@@ -21,6 +21,8 @@
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^4.1.2",
     "mongoose": "^5.13.7",
+    "pm2": "^5.1.2",
+    "restify": "^8.6.0",
     "urlencode": "^1.1.0",
     "utf8": "^3.0.0",
     "util": "^0.12.4",
