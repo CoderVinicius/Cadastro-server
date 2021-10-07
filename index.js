@@ -17,6 +17,6 @@ app.use(
 const userRouter = require("./src/routes/user.routes");
 app.use("/api", userRouter);
 
-app.listen(Number(process.env.PORT), () =>
-  console.log(`Server up and running at port ${process.env.PORT}`)
-);
+app.listen(process.env.PORT || 4000, function () {
+  console.log("listening on *:4000");
+});
