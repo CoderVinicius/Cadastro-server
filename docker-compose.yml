@@ -1,0 +1,21 @@
+version: "3.9" # optional since v1.27.0
+services:
+  front:
+    restart: always
+    image: codervinicius/cadastro-client
+    network_mode: host
+
+  back:
+    restart: always
+    image: codervinicius/cadastro-server
+    network_mode: host
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo
+    volumes:
+      - mongodb:/data/db
+    network_mode: host
+volumes:
+  mongodb:
